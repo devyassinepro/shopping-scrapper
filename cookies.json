@@ -1,0 +1,12 @@
+[
+    {
+        "domain": ".google.com",
+        "expiry": 1773615456,
+        "httpOnly": false,
+        "name": "SOCS",
+        "path": "/",
+        "sameSite": "Lax",
+        "secure": true,
+        "value": "CAISNQgNEitib3FfaWRlbnRpdHlmcm9udGVuZHVpc2VydmVyXzIwMjUwMjEyLjA3X3AwGgJmciACGgYIgOy0vQY"
+    }
+]
