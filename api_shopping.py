@@ -152,7 +152,7 @@ async def test_scraper():
 
 @app.get("/view/")
 async def view_screenshot():
-    return FileResponse("/home/shopping-scrapper/screenshot.png")
+    return FileResponse("/home/shopping-scrapper/search_results_screenshot.png")
 # Run the FastAPI app
 if __name__ == "__main__":
     import uvicorn
