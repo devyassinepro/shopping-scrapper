@@ -9,7 +9,7 @@ app = FastAPI()
 # Function to load cookies from a JSON file
 def load_cookies():
     try:
-        with open("../cookies.json", "r") as file:
+        with open("cookies.json", "r") as file:
             cookies = json.load(file)
         return cookies
     except Exception as e:
@@ -72,7 +72,7 @@ async def scrape_google_shopping(query):
 
             # Scrape product details concurrently
             tasks = []  # This is a list to store coroutines
-            for product in products[:80]:  # Limit to 5 products for testing
+            for product in products[:5]:  # Limit to 5 products for testing
                 try:
                     # Extract product details
                     product_title = await product.query_selector("h3.tAxDx")
@@ -126,6 +126,54 @@ async def scrape(query: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# @app.get("/scrape/")
+# async def scrape(query: str):
+#     try:
+#         async with async_playwright() as p:
+#             browser = await p.chromium.launch(headless=True)
+#             context = await browser.new_context()
+#
+#             # Load cookies into the browser context
+#             cookies = load_cookies()
+#             if cookies:
+#                 await context.add_cookies(cookies)
+#                 print("Cookies loaded successfully.")
+#
+#             page = await browser.new_page()
+#             url = await page.goto(f"https://www.google.com/search?q={query}&tbm=shop")
+#             print(f"Navigating to: {url}")  # Debugging
+#
+#             await page.goto(url, timeout=60000)  # 60 seconds timeout
+#             await page.screenshot(path="screenshot.png")  # Take a screenshot
+#
+#             content = await page.content()  # Get HTML content
+#             print(content[:500])  # Print first 500 chars for debugging
+#
+#             await browser.close()
+#             return {"message": "Scrape successful"}
+#
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return {"error": str(e)}
+
+
+@app.get("/test")
+async def test_scraper():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        context = await browser.new_context()
+
+        # Load cookies into the browser context
+        cookies = load_cookies()
+        if cookies:
+            await context.add_cookies(cookies)
+            print("Cookies loaded successfully.")
+
+        page = await browser.new_page()
+        await page.goto("https://www.google.com")
+        title = await page.title()
+        await browser.close()
+        return {"title": title}
 # Run the FastAPI app
 if __name__ == "__main__":
     import uvicorn
