@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from playwright.async_api import async_playwright
 import json
 import re
+from fastapi.responses import FileResponse
+
 
 app = FastAPI()
 
@@ -147,6 +149,10 @@ async def test_scraper():
         title = await page.title()
         await browser.close()
         return {"title": title}
+
+@app.get("/view/")
+async def view_screenshot():
+    return FileResponse("/home/shopping-scrapper/screenshot.png")
 # Run the FastAPI app
 if __name__ == "__main__":
     import uvicorn
