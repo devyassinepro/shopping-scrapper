@@ -62,8 +62,8 @@ async def scrape_google_shopping(query):
         await page.goto(f"https://www.google.com/search?q={query}&tbm=shop")
 
         # Debug: Take a screenshot of the search results page
-        # await page.screenshot(path="search_results_screenshot.png")
-        # print("Screenshot saved: search_results_screenshot.png")
+        await page.screenshot(path="search_results_screenshot.png")
+        print("Screenshot saved: search_results_screenshot.png")
 
         try:
             await page.wait_for_selector("div.sh-dgr__content", timeout=60000)  # Increase timeout
@@ -125,37 +125,6 @@ async def scrape(query: str):
         return product_data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# @app.get("/scrape/")
-# async def scrape(query: str):
-#     try:
-#         async with async_playwright() as p:
-#             browser = await p.chromium.launch(headless=True)
-#             context = await browser.new_context()
-#
-#             # Load cookies into the browser context
-#             cookies = load_cookies()
-#             if cookies:
-#                 await context.add_cookies(cookies)
-#                 print("Cookies loaded successfully.")
-#
-#             page = await browser.new_page()
-#             url = await page.goto(f"https://www.google.com/search?q={query}&tbm=shop")
-#             print(f"Navigating to: {url}")  # Debugging
-#
-#             await page.goto(url, timeout=60000)  # 60 seconds timeout
-#             await page.screenshot(path="screenshot.png")  # Take a screenshot
-#
-#             content = await page.content()  # Get HTML content
-#             print(content[:500])  # Print first 500 chars for debugging
-#
-#             await browser.close()
-#             return {"message": "Scrape successful"}
-#
-#     except Exception as e:
-#         print(f"Error: {e}")
-#         return {"error": str(e)}
-
 
 @app.get("/test")
 async def test_scraper():
