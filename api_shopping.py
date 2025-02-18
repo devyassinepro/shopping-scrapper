@@ -64,8 +64,8 @@ async def scrape_google_shopping(query):
         await page.goto(f"https://www.google.com/search?q={query}&tbm=shop")
 
         # Debug: Take a screenshot of the search results page
-        await page.screenshot(path="search_results_screenshot.png")
-        print("Screenshot saved: search_results_screenshot.png")
+        # await page.screenshot(path="search_results_screenshot.png")
+        # print("Screenshot saved: search_results_screenshot.png")
 
         # Save a screenshot on the server
         screenshot_path = "/home/screenshot.png"
@@ -78,7 +78,7 @@ async def scrape_google_shopping(query):
 
             # Scrape product details concurrently
             tasks = []  # This is a list to store coroutines
-            for product in products[:5]:  # Limit to 5 products for testing
+            for product in products[:70]:  # Limit to 5 products for testing
                 try:
                     # Extract product details
                     product_title = await product.query_selector("h3.tAxDx")
