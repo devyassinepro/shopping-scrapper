@@ -72,7 +72,7 @@ async def scrape_google_shopping(query):
         await page.screenshot(path=screenshot_path, full_page=True)
         print(f"Scraping product URL: {screenshot_path}")
         try:
-            await page.wait_for_selector("div.sh-dgr__content", timeout=60000)  # Increase timeout
+            await page.wait_for_selector("div.sh-dgr__content", timeout=2000)  # Increase timeout
             products = await page.query_selector_all("div.sh-dgr__content")
             product_data = []
 
