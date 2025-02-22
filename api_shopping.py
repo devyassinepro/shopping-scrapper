@@ -116,6 +116,11 @@ async def scrape_google_shopping(query):
             products = await page.query_selector_all("div.sh-dgr__content")
             product_data = []
 
+            # Variables pour le comptage
+            total_products = len(products)
+            success_count = 0
+            error_count = 0
+
             # Scrape product details concurrently
             tasks = []  # This is a list to store coroutines
             for product in products[:60]:  # Limit to 5 products for testing
@@ -144,8 +149,10 @@ async def scrape_google_shopping(query):
                         tasks.append(scrape_product_details(product_dict["product_link"], context))
 
                     product_data.append(product_dict)
+                    success_count += 1  # Incrémenter le compteur de succès
                 except Exception as e:
                     print(f"Error scraping product: {e}")
+                    error_count += 1  # Incrémenter le compteur d'erreurs
 
             # Wait for all product detail scraping tasks to complete
             details_list = await asyncio.gather(*tasks)
@@ -157,6 +164,10 @@ async def scrape_google_shopping(query):
             await browser.close()
             # Sauvegarder les données dans MySQL
             save_to_db(product_data)
+            # Afficher les résultats
+            print(f"Scraping terminé. Total de produits : {total_products}")
+            print(f"Produits scrapés avec succès : {success_count}")
+            print(f"Produits avec erreurs : {error_count}")
             return product_data
         except Exception as e:
             print(f"Error waiting for selector: {e}")
