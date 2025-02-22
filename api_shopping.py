@@ -68,7 +68,8 @@ async def scrape_product_details(product_url, context):
 
         # Open a new page for the product details
         page = await context.new_page()
-        await page.goto(product_url, wait_until="domcontentloaded")
+        # await page.goto(product_url, wait_until="domcontentloaded")
+        await page.goto(product_url, timeout=60000, wait_until="domcontentloaded")
 
         # Extract the description
         description = await page.inner_text("div.Zh8lCd") if await page.query_selector("div.Zh8lCd") else "N/A"
