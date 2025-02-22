@@ -71,8 +71,8 @@ async def scrape_product_details(product_url, context):
 
         # Open a new page for the product details
         page = await context.new_page()
-        # await page.goto(product_url, wait_until="domcontentloaded")
-        await page.goto(product_url, timeout=60000, wait_until="domcontentloaded")
+        await page.goto(product_url, wait_until="domcontentloaded")
+        # await page.goto(product_url, timeout=60000, wait_until="domcontentloaded")
 
         # Extract the description
         description = await page.inner_text("div.Zh8lCd") if await page.query_selector("div.Zh8lCd") else "N/A"
@@ -122,7 +122,7 @@ async def scrape_google_shopping(query):
 
             # Scrape product details concurrently
             tasks = []
-            for product in products[:60]:  # Limit to 60 products for testing
+            for product in products[:10]:  # Limit to 60 products for testing
                 try:
                     # Extract product details
                     product_title = await product.query_selector("h3.tAxDx")
