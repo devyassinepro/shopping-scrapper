@@ -122,7 +122,7 @@ async def scrape_google_shopping(query):
 
             # Scrape product details concurrently
             tasks = []
-            for product in products[:10]:  # Limit to 60 products for testing
+            for product in products[:30]:  # Limit to 60 products for testing
                 try:
                     # Extract product details
                     product_title = await product.query_selector("h3.tAxDx")
