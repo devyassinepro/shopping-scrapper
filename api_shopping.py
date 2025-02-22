@@ -41,6 +41,9 @@ def save_to_db(product_data):
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
         for product in product_data:
+
+            product.setdefault("description", "N/A")
+
             cursor.execute(query, (
                 product["product_title"],
                 product["product_price"],
@@ -73,7 +76,9 @@ async def scrape_product_details(product_url, context):
 
         # Extract the description
         description = await page.inner_text("div.Zh8lCd") if await page.query_selector("div.Zh8lCd") else "N/A"
-
+        # Check if the description is empty
+        if not description.strip():  # If the description is empty or contains only spaces
+            description = "N/A"
         await page.close()
         return {
             "description": description
@@ -103,17 +108,10 @@ async def scrape_google_shopping(query):
         await page.route("**/*.js", lambda route: route.abort())
 
         await page.goto(f"https://www.google.com/search?q={query}&tbm=shop")
+        # await page.wait_for_timeout(5000)  # Wait for the page to load
 
-        # Debug: Take a screenshot of the search results page
-        # await page.screenshot(path="search_results_screenshot.png")
-        # print("Screenshot saved: search_results_screenshot.png")
-
-        # Save a screenshot on the server
-        # screenshot_path = "/home/screenshot.png"
-        # await page.screenshot(path=screenshot_path, full_page=True)
-        # print(f"Scraping product URL: {screenshot_path}")
         try:
-            # await page.wait_for_selector("div.sh-dgr__content", timeout=2000)  # Increase timeout
+            await page.wait_for_selector("div.sh-dgr__content", timeout=60000)  # Increase timeout
             products = await page.query_selector_all("div.sh-dgr__content")
             product_data = []
 
@@ -123,8 +121,8 @@ async def scrape_google_shopping(query):
             error_count = 0
 
             # Scrape product details concurrently
-            tasks = []  # This is a list to store coroutines
-            for product in products[:60]:  # Limit to 5 products for testing
+            tasks = []
+            for product in products[:60]:  # Limit to 60 products for testing
                 try:
                     # Extract product details
                     product_title = await product.query_selector("h3.tAxDx")
@@ -145,18 +143,17 @@ async def scrape_google_shopping(query):
                     }
 
                     # Scrape additional details concurrently
-                    # Filtrer les URLs valides
-                    if product_dict["product_link"] and "shopping/product/" in product_dict["product_link"]:    # Append the coroutine to the tasks list
+                    if product_dict["product_link"] and "shopping/product/" in product_dict["product_link"]:
                         tasks.append(scrape_product_details(product_dict["product_link"], context))
                         success_count += 1
                     else:
                         print(f"URL non valide ignorée : {product_dict['product_link']}")
-                        error_count += 1  # Incrémenter le compteur d'erreurs
+                        error_count += 1
 
                     product_data.append(product_dict)
                 except Exception as e:
                     print(f"Error scraping product: {e}")
-                    error_count += 1  # Incrémenter le compteur d'erreurs
+                    error_count += 1
 
             # Wait for all product detail scraping tasks to complete
             details_list = await asyncio.gather(*tasks)
@@ -166,18 +163,20 @@ async def scrape_google_shopping(query):
                 product_data[i].update(details)
 
             await browser.close()
-            # Sauvegarder les données dans MySQL
+
+            # Save data to MySQL
             save_to_db(product_data)
-            # Afficher les résultats
+
+            # Print results
             print(f"Scraping terminé. Total de produits : {total_products}")
             print(f"Produits scrapés avec succès : {success_count}")
             print(f"Produits avec erreurs : {error_count}")
+
             return product_data
         except Exception as e:
             print(f"Error waiting for selector: {e}")
             await browser.close()
             return []
-
 # API Endpoint
 @app.get("/scrape/")
 async def scrape(query: str):
