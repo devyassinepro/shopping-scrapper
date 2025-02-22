@@ -4,9 +4,20 @@ from playwright.async_api import async_playwright
 import json
 import re
 from fastapi.responses import FileResponse
+import mysql.connector
+
 
 
 app = FastAPI()
+
+# Configuration de la base de données MySQL
+def get_db_connection():
+    return mysql.connector.connect(
+        host="srv1588.hstgr.io",
+        user="u423420538_scrapper",
+        password="5Ge&y8rFHcV",
+        database="u423420538_scrapper"
+    )
 
 # Function to load cookies from a JSON file
 def load_cookies():
@@ -17,6 +28,34 @@ def load_cookies():
     except Exception as e:
         print(f"Error loading cookies: {e}")
         return []
+
+# Fonction pour sauvegarder les produits dans la base de données
+def save_to_db(product_data):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        query = """
+        INSERT INTO products (product_title, product_price, product_link, product_image, product_rating, product_num_reviews, description)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        for product in product_data:
+            cursor.execute(query, (
+                product["product_title"],
+                product["product_price"],
+                product["product_link"],
+                product["product_image"],
+                product["product_rating"],
+                product["product_num_reviews"],
+                product["description"]
+            ))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("Data saved to MySQL database.")
+    except Exception as e:
+        print(f"Error saving to database: {e}")
 
 async def scrape_product_details(product_url, context):
     try:
@@ -68,17 +107,17 @@ async def scrape_google_shopping(query):
         # print("Screenshot saved: search_results_screenshot.png")
 
         # Save a screenshot on the server
-        screenshot_path = "/home/screenshot.png"
-        await page.screenshot(path=screenshot_path, full_page=True)
-        print(f"Scraping product URL: {screenshot_path}")
+        # screenshot_path = "/home/screenshot.png"
+        # await page.screenshot(path=screenshot_path, full_page=True)
+        # print(f"Scraping product URL: {screenshot_path}")
         try:
-            await page.wait_for_selector("div.sh-dgr__content", timeout=2000)  # Increase timeout
+            # await page.wait_for_selector("div.sh-dgr__content", timeout=2000)  # Increase timeout
             products = await page.query_selector_all("div.sh-dgr__content")
             product_data = []
 
             # Scrape product details concurrently
             tasks = []  # This is a list to store coroutines
-            for product in products[:70]:  # Limit to 5 products for testing
+            for product in products[:60]:  # Limit to 5 products for testing
                 try:
                     # Extract product details
                     product_title = await product.query_selector("h3.tAxDx")
@@ -115,6 +154,8 @@ async def scrape_google_shopping(query):
                 product_data[i].update(details)
 
             await browser.close()
+            # Sauvegarder les données dans MySQL
+            save_to_db(product_data)
             return product_data
         except Exception as e:
             print(f"Error waiting for selector: {e}")
