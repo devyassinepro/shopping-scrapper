@@ -145,12 +145,15 @@ async def scrape_google_shopping(query):
                     }
 
                     # Scrape additional details concurrently
-                    if product_dict["product_link"] != "N/A":
-                        # Append the coroutine to the tasks list
+                    # Filtrer les URLs valides
+                    if product_dict["product_link"] and "shopping/product/" in product_dict["product_link"]:    # Append the coroutine to the tasks list
                         tasks.append(scrape_product_details(product_dict["product_link"], context))
+                        success_count += 1
+                    else:
+                        print(f"URL non valide ignorée : {product_dict['product_link']}")
+                        error_count += 1  # Incrémenter le compteur d'erreurs
 
                     product_data.append(product_dict)
-                    success_count += 1  # Incrémenter le compteur de succès
                 except Exception as e:
                     print(f"Error scraping product: {e}")
                     error_count += 1  # Incrémenter le compteur d'erreurs
