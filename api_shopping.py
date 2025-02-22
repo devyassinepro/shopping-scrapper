@@ -5,6 +5,7 @@ import json
 import re
 from fastapi.responses import FileResponse
 import mysql.connector
+import time
 
 
 
@@ -166,7 +167,10 @@ async def scrape_google_shopping(query):
 @app.get("/scrape/")
 async def scrape(query: str):
     try:
+        start_time = time.time()
         product_data = await scrape_google_shopping(query)
+        end_time = time.time()
+        print(f"Temps d'exécution : {end_time - start_time} secondes")
         if not product_data:
             raise HTTPException(status_code=404, detail="No products found")
         return product_data
